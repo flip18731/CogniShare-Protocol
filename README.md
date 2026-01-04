@@ -82,6 +82,20 @@ streamlit run app.py
 
 Open `http://localhost:8501` in your browser!
 
+### 4. (Optional) Deploy Smart Contract
+
+For on-chain citation tracking:
+
+```bash
+# Install contract dependencies
+pip install py-solc-x
+
+# Deploy to Cronos Testnet
+python deploy_contract.py
+```
+
+See [SMART_CONTRACT_SETUP.md](SMART_CONTRACT_SETUP.md) for detailed instructions.
+
 ---
 
 ## 🎮 Testing Modes
@@ -104,12 +118,18 @@ With all API keys configured:
 
 ```
 CogniShare-Protocol/
-├── app.py              # Streamlit UI (main entry point)
-├── rag_core.py         # RAG Engine (embeddings, search)
-├── payment_manager.py  # Cronos x402 payments
-├── requirements.txt    # Python dependencies
-├── env.template        # Environment variables template
-└── README.md           # You are here!
+├── app.py                      # Streamlit UI (main entry point)
+├── rag_core.py                 # RAG Engine (embeddings, search)
+├── payment_manager.py          # Cronos x402 payments + Smart Contract
+├── deploy_contract.py          # Smart contract deployment script
+├── requirements.txt            # Python dependencies
+├── env.template                # Environment variables template
+├── contracts/
+│   ├── CogniShareRegistry.sol  # Smart contract for on-chain citations
+│   └── README.md               # Contract documentation
+├── contract_data.json          # Deployed contract address & ABI (auto-generated)
+├── SMART_CONTRACT_SETUP.md     # Smart contract deployment guide
+└── README.md                   # You are here!
 ```
 
 ---
@@ -187,10 +207,13 @@ result = payment.pay_authors(
 ✅ PDF ingestion with author wallet attribution  
 ✅ Semantic search with Pinecone/mock fallback  
 ✅ x402 micropayments on Cronos EVM  
+✅ **Smart Contract Registry** - On-chain citation tracking  
+✅ **Event Logs** - Immutable audit trail for every citation  
 ✅ GPT-4o-mini for answer generation  
 ✅ Beautiful Streamlit UI  
 ✅ Graceful degradation (mock modes)  
 ✅ Transaction tracking & explorer links  
+✅ **Batch payments** - Gas-optimized multi-author payments  
 
 ---
 

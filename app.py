@@ -343,16 +343,40 @@ def main():
                        unsafe_allow_html=True)
         st.caption(f"Vectors stored: {rag_stats['total_vectors']}")
         
-        # Payment Status
+        # Payment Status with Smart Contract Detection
         payment_status = payment_manager.get_status()
+        
         if payment_status["mock_mode"]:
+            # Mock Mode
             st.markdown("**Payments:** <span class='status-offline'>🟡 Mock Mode</span>", 
                        unsafe_allow_html=True)
             st.caption("Add CRONOS_PRIVATE_KEY to .env for real payments")
         else:
-            st.markdown("**Payments:** <span class='status-online'>🟢 Live</span>", 
-                       unsafe_allow_html=True)
-            st.caption(f"Balance: {payment_status['balance_cro']:.4f} CRO")
+            # Live Mode - Check for Smart Contract
+            if payment_status.get("smart_contract"):
+                # Smart Contract Mode (Enhanced)
+                st.markdown("**Payments:** <span class='status-online'>🟢 Smart Contract</span>", 
+                           unsafe_allow_html=True)
+                
+                # Show contract address
+                contract_addr = payment_status.get("contract_address", "")
+                if contract_addr:
+                    st.caption(f"📜 Contract: `{contract_addr[:10]}...{contract_addr[-6:]}`")
+                
+                # Show on-chain statistics if available
+                citations = payment_status.get("total_citations_onchain", 0)
+                paid = payment_status.get("total_paid_onchain", 0)
+                if citations > 0 or paid > 0:
+                    st.caption(f"📊 On-chain: {citations} citations | {paid:.4f} CRO paid")
+                else:
+                    st.caption("📊 On-chain tracking active")
+                    
+            else:
+                # Direct Transfer Mode (Legacy)
+                st.markdown("**Payments:** <span class='status-online'>🟢 Direct Transfer</span>", 
+                           unsafe_allow_html=True)
+                st.caption(f"Balance: {payment_status['balance_cro']:.4f} CRO")
+                st.caption("💡 Deploy smart contract for on-chain citation tracking")
         
         # Upload Section
         st.markdown("---")
@@ -454,6 +478,12 @@ def main():
                     # Show TX hashes
                     if payment.get("tx_hashes"):
                         with st.expander("🔗 Transaction Details", expanded=False):
+                            # Check if using smart contract
+                            using_contract = payment_manager.get_status().get("smart_contract", False)
+                            
+                            if using_contract:
+                                st.caption("💡 Smart contract transactions - check 'Internal Txns' tab in explorer")
+                            
                             for tx in payment["tx_hashes"]:
                                 explorer_url = payment_manager.get_explorer_url(tx["tx_hash"])
                                 st.markdown(f"""
@@ -489,11 +519,11 @@ def main():
             # Step 2: Process x402 payments
             with st.spinner("⚡ Processing x402 Micropayments..."):
                 time.sleep(0.3)
-                author_wallets = [s["author_wallet"] for s in sources]
                 
                 try:
-                    payment_result = payment_manager.pay_authors(
-                        author_wallets, 
+                    # ✅ FIXED: Pass full sources with content text for proper attribution
+                    payment_result = payment_manager.pay_authors_with_content(
+                        sources,  # Pass complete source objects (includes 'text' field)
                         amount_per_citation=0.01
                     )
                     

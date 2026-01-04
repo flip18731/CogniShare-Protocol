@@ -158,8 +158,11 @@ class CronosPayment:
         wallet_counts: Dict[str, int] = {}
         for wallet in author_wallets:
             wallet = wallet.strip()
-            if wallet and wallet != "0x0":
+            # Validate wallet: must be 42 chars, start with 0x, and not be zero address
+            if wallet and len(wallet) == 42 and wallet.startswith("0x") and wallet != "0x" + "0"*40:
                 wallet_counts[wallet] = wallet_counts.get(wallet, 0) + 1
+            else:
+                print(f"   ⚠️ Skipping invalid wallet: {wallet[:20] if wallet else 'empty'}...")
         
         unique_wallets = list(wallet_counts.keys())
         print(f"   Unique authors: {len(unique_wallets)}")
@@ -196,6 +199,10 @@ class CronosPayment:
         Simulate payments for demo/testing.
         
         Returns fake transaction hashes that look realistic.
+        
+        NOTE: Mock mode ALWAYS returns success=True to allow demos to run
+        without real blockchain access. In production, only _real_payments
+        is used with proper success validation.
         """
         import hashlib
         import time
@@ -218,8 +225,10 @@ class CronosPayment:
             
             print(f"   💸 [MOCK] Paid {payment['amount']:.4f} CRO to {payment['wallet'][:10]}...")
         
+        print(f"   ✅ Mock mode: {len(payments)} simulated payments successful")
+        
         return {
-            "success": True,
+            "success": True,  # Always True in mock mode for demo purposes
             "tx_hashes": tx_hashes,
             "total_paid": total_paid,
             "unique_authors": len(payments),
@@ -232,6 +241,10 @@ class CronosPayment:
         Execute real blockchain payments.
         
         Sends CRO to each author's wallet and returns TX hashes.
+        
+        CRITICAL: Returns success=True ONLY if at least one payment succeeded.
+        This enforces the x402 protocol - if all payments fail, the system
+        must not proceed with generating an answer.
         """
         tx_hashes = []
         total_paid = 0
@@ -260,8 +273,15 @@ class CronosPayment:
                 errors.append(error_msg)
                 print(f"   ❌ {error_msg}")
         
+        # CRITICAL: success=True ONLY if at least one TX succeeded
+        # If all TXs failed, success=False enforces x402 (no payment = no answer)
+        success = len(tx_hashes) > 0
+        
+        if not success:
+            print("   🚫 ALL payments failed - x402 enforcement active")
+        
         return {
-            "success": len(tx_hashes) > 0,
+            "success": success,
             "tx_hashes": tx_hashes,
             "total_paid": total_paid,
             "unique_authors": len(tx_hashes),

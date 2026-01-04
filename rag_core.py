@@ -359,13 +359,13 @@ class RAGEngine:
             },
             {
                 "text": "The x402 protocol enables micropayments for AI knowledge retrieval, compensating content creators fairly for their contributions to AI training.",
-                "author_wallet": "0x8ba1f109551bD432803012645Hc136c5E2C6bc",
+                "author_wallet": "0x8ba1f109551bD432803012645ac136c5E2C6bc29",
                 "score": 0.88,
                 "file_name": "demo_knowledge.pdf"
             },
             {
                 "text": "Cronos EVM provides fast and low-cost transactions, making it ideal for micropayment use cases in decentralized applications.",
-                "author_wallet": "0x1Cb45B3E8b0F2a9B2D6f07E3CfC19e50D2a7d3F",
+                "author_wallet": "0x1Cb45B3E8b0F2a9B2D6f07E3CfC19e50D2a7d3F1",
                 "score": 0.82,
                 "file_name": "demo_knowledge.pdf"
             }

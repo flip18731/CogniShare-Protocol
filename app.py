@@ -490,12 +490,45 @@ def main():
             with st.spinner("⚡ Processing x402 Micropayments..."):
                 time.sleep(0.3)
                 author_wallets = [s["author_wallet"] for s in sources]
-                payment_result = payment_manager.pay_authors(author_wallets, amount_per_citation=0.01)
+                
+                try:
+                    payment_result = payment_manager.pay_authors(
+                        author_wallets, 
+                        amount_per_citation=0.01
+                    )
+                    
+                    # CRITICAL x402 CHECK: Verify payment succeeded
+                    if not payment_result['success']:
+                        st.error("⚠️ **Payment Failed** - Cannot generate answer without compensating authors.")
+                        
+                        # Show error details
+                        if payment_result.get('error'):
+                            st.error(f"**Reason:** {payment_result['error']}")
+                        
+                        if payment_result.get('errors'):
+                            with st.expander("⚠️ Transaction Error Details"):
+                                for error in payment_result['errors']:
+                                    st.warning(error)
+                        
+                        # In Mock Mode: Allow with warning (for demo purposes)
+                        if payment_result['mock_mode']:
+                            st.warning("🟡 **Mock Mode Active** - Continuing for demonstration purposes")
+                            st.info("💡 In production mode, the answer would be withheld until payment succeeds.")
+                        else:
+                            # In Real Mode: ENFORCE x402 - No payment, no answer!
+                            st.error("🚫 **x402 Protocol Enforced:** Answer withheld until authors are compensated.")
+                            st.info("💡 Please ensure your wallet has sufficient CRO balance and try again.")
+                            st.stop()  # Halt execution - true x402 behavior!
+                
+                except Exception as e:
+                    st.error(f"❌ **Payment System Error:** {str(e)}")
+                    st.error("🚫 Cannot proceed without functional payment system (x402 requirement)")
+                    st.stop()
             
             # Display payment confirmation
             st.markdown(f"""
             <div class="payment-alert">
-                <h4>⚡ x402 Payment Triggered</h4>
+                <h4>⚡ x402 Payment Successful</h4>
                 <div class="amount">{payment_result['total_paid']:.4f} CRO</div>
                 <small>Paid to {payment_result['unique_authors']} unique author(s) 
                 {'(Simulated)' if payment_result['mock_mode'] else '(On-Chain)'}</small>
@@ -505,7 +538,7 @@ def main():
             # Update session stats
             st.session_state.total_payments += payment_result['total_paid']
             
-            # Step 3: Generate AI answer
+            # Step 3: Generate AI answer (ONLY after successful payment!)
             with st.spinner("🤖 Generating answer with GPT-4o-mini..."):
                 answer = generate_answer(prompt, sources)
             

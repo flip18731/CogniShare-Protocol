@@ -1,0 +1,67 @@
+# =============================================================================
+# CogniShare Protocol - Git Ignore
+# =============================================================================
+
+# ----- Environment & Secrets -----
+.env
+.env.local
+.env.*.local
+
+# ----- Smart Contract Data -----
+contract_data.json
+contract_data.backup.json
+
+# ----- Python -----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# ----- Solidity Compiler Cache -----
+.solcx/
+contracts/build/
+contracts/cache/
+
+# ----- IDE -----
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ----- Streamlit -----
+.streamlit/
+
+# ----- OS -----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ----- Logs -----
+*.log
+logs/
+
+# ----- Temporary Files -----
+*.tmp
+*.temp
+.cache/
+
+# ----- Jupyter -----
+.ipynb_checkpoints/
+*.ipynb
+
+# ----- Testing -----
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ----- Distribution -----
+dist/
+build/
+*.egg-info/
+
